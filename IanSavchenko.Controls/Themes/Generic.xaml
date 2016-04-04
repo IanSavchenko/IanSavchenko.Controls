@@ -9,9 +9,10 @@
                     <ContentPresenter Margin="5"
                                       HorizontalAlignment="Left"
                                       VerticalAlignment="Bottom"
-                                      Content="{Binding}"
-                                      FontFamily="Microsoft Sans Serif"
-                                      FontSize="{ThemeResource TextStyleExtraLargeFontSize}" />
+                                      Content="{Binding Mode=OneWay}"
+                                      FontFamily="Segoe WP"
+                                      FontSize="50"
+                                      FontWeight="SemiBold" />
                 </DataTemplate>
             </Setter.Value>
         </Setter>
@@ -23,22 +24,29 @@
                         <Border Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
-                            <ScrollViewer Name="PART_ScrollViewer" VerticalScrollBarVisibility="Hidden">
+                            <ScrollViewer Name="PART_ScrollViewer"
+                                          Opacity="0"
+                                          VerticalScrollBarVisibility="Hidden">
                                 <ItemsControl Name="PART_ItemsControl" />
                             </ScrollViewer>
                         </Border>
-                        <!--<Border Height="1"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                BorderBrush="Black"
-                                BorderThickness="1" />-->
+
+                        <local:ListSelectorItem x:Name="PART_InactiveStateItem"
+                                                Width="{TemplateBinding ItemWidth}"
+                                                Height="{TemplateBinding ItemHeight}"
+                                                Margin="{TemplateBinding ItemMargin}"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                IsHitTestVisible="False"
+                                                IsSelected="True"
+                                                Opacity="1" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
 
         <Setter Property="HorizontalAlignment" Value="Center" />
-        <Setter Property="ItemMargin" Value="0,2" />
+        <Setter Property="ItemMargin" Value="0,5" />
     </Style>
 
     <Style TargetType="local:ListSelectorItem">
@@ -68,7 +76,7 @@
                         <Border x:Name="BackgroundBorder"
                                 Background="Transparent"
                                 BorderBrush="{ThemeResource PhoneDisabledBrush}"
-                                BorderThickness="{ThemeResource PhoneBorderThickness}" />
+                                BorderThickness="3" />
                         <Border x:Name="AccentBackgroundBorder"
                                 Background="{ThemeResource PhoneAccentBrush}"
                                 Opacity="0" />

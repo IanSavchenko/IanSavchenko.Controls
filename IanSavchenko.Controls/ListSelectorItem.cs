@@ -14,9 +14,10 @@ namespace IanSavchenko.Controls
         public static DependencyProperty IsSelectedProperty = 
             DependencyProperty.Register("IsSelected", typeof(bool), typeof(ListSelectorItem), new PropertyMetadata(false, IsSelectedPropertyChanged));
         
-        internal ListSelectorItem()
+        public ListSelectorItem()
         {
             this.DefaultStyleKey = typeof(ListSelectorItem);
+            this.Loaded += (sender, args) => UpdateStates(true);
         }
 
         public DataTemplate ItemTemplate

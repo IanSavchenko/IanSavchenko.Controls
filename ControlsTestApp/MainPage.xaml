@@ -13,29 +13,22 @@
             <ColumnDefinition />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <controls:ListSelector VerticalAlignment="Stretch"
-                               ItemHeight="150"
-                               ItemWidth="150"
+        <controls:ListSelector Margin="5,0"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Stretch"
                                ItemsSource="{Binding TestItems}"
-                               SelectedIndex="50">
-            <controls:ListSelector.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontFamily="Microsoft Sans Serif"
-                               FontSize="50"
-                               Text="{Binding}" />
-                </DataTemplate>
-            </controls:ListSelector.ItemTemplate>
-        </controls:ListSelector>
+                               SelectedIndex="19" />
 
         <controls:ListSelector Grid.Column="1"
+                               Margin="5,0"
+                               HorizontalAlignment="Left"
                                VerticalAlignment="Stretch"
-                               ItemHeight="150"
-                               ItemWidth="150"
+                               ItemHeight="130"
+                               ItemMargin="0,5"
+                               ItemWidth="130"
                                ItemsSource="{Binding TestItems}"
                                SelectedIndex="3">
-            <controls:ListSelector.ItemTemplate>
+            <!--<controls:ListSelector.ItemTemplate>
                 <DataTemplate>
                     <TextBlock HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -43,7 +36,7 @@
                                FontSize="50"
                                Text="{Binding}" />
                 </DataTemplate>
-            </controls:ListSelector.ItemTemplate>
+            </controls:ListSelector.ItemTemplate>-->
         </controls:ListSelector>
     </Grid>
 </Page>

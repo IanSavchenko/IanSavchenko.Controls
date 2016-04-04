@@ -7,7 +7,7 @@ namespace ControlsTestApp
     {
         public List<string> TestItems
         {
-            get { return Enumerable.Range(0, 100).Select(t => t.ToString()).ToList(); }
+            get { return Enumerable.Range(0, 100).Select(t => t.ToString("D2")).ToList(); }
         }
              
     }
