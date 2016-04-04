@@ -385,7 +385,7 @@ namespace IanSavchenko.Controls
             
             _items[_highlightIndex].IsSelected = true;
             _inactiveStateItemPart.ItemTemplate = null;
-            _inactiveStateItemPart.ItemContent = _items[index].ItemContent;
+            _inactiveStateItemPart.ItemContent = _items[_highlightIndex].ItemContent;
             _inactiveStateItemPart.ItemTemplate = ItemTemplate;
         }
 
@@ -411,6 +411,10 @@ namespace IanSavchenko.Controls
             if (offset == Math.Round(_latestVerticalScrollOffset, MidpointRounding.ToEven))
             {
                 FinishSnapping();
+
+                if (!_active)
+                    SetActive(_active);
+
                 return;
             }
 
@@ -471,18 +475,26 @@ namespace IanSavchenko.Controls
         private void SetActive(bool active)
         {
             _active = active;
+
+            // if has no highlight, not running animation
+            if (_highlightIndex == -1)
+                return;
+
             ChangeScrollViewerOpacity(active ? 1 : 0);
             if (!_active)
-            {
                 _inactiveStateItemPart.Visibility = Visibility.Visible;
-            }
 
-            _inactiveStateItemPart.ItemContent = _items[SelectedIndex].ItemContent;
+            _inactiveStateItemPart.ItemTemplate = null;
+            _inactiveStateItemPart.ItemContent = _items[_highlightIndex].ItemContent;
+            _inactiveStateItemPart.ItemTemplate = ItemTemplate;
         }
         
         private void ChangeScrollViewerOpacity(double to)
         {
             var currentOpacity = _scrollViewerPart.Opacity;
+
+            if (_opacityAnimation.To == to)
+                return;
 
             _opacityStoryboard.Stop();
 
