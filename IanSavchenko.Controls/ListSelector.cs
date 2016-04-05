@@ -56,8 +56,12 @@ namespace IanSavchenko.Controls
 
         private volatile bool _snappingPerformed;
 
-        private Storyboard _opacityStoryboard;
-        private DoubleAnimation _opacityAnimation;
+        private Storyboard _hideItemsStoryboard;
+        private DoubleAnimation _hideItemsAnimation;
+
+        private Storyboard _showItemsStoryboard;
+        private DoubleAnimation _showItemsAnimation;
+
         private double _prevChangeViewCallOffset = -1;
         private double _prevChangeViewCallCurrentOffset = -1;
         private bool _active;
@@ -267,21 +271,21 @@ namespace IanSavchenko.Controls
 
         private void CreateAnimations()
         {
-            _opacityAnimation = new DoubleAnimation();
-            _opacityStoryboard = new Storyboard();
-            _opacityStoryboard.FillBehavior = FillBehavior.HoldEnd;
-            _opacityStoryboard.Children.Add(_opacityAnimation);
+            _showItemsStoryboard = new Storyboard();
+            _hideItemsStoryboard = new Storyboard();
+            
+            _hideItemsAnimation = new DoubleAnimation();
+            _showItemsAnimation = new DoubleAnimation();
 
-            Storyboard.SetTarget(_opacityStoryboard, _scrollViewerPart);
-            Storyboard.SetTargetProperty(_opacityStoryboard, "Opacity");
+            _showItemsStoryboard.Children.Add(_showItemsAnimation);
+            _hideItemsStoryboard.Children.Add(_hideItemsAnimation);
 
-            _opacityStoryboard.Completed += OpacityStoryboardOnCompleted;
-        }
+            Storyboard.SetTarget(_showItemsStoryboard, _scrollViewerPart);
+            Storyboard.SetTarget(_hideItemsStoryboard, _scrollViewerPart);
+            Storyboard.SetTargetProperty(_showItemsStoryboard, "Opacity");
+            Storyboard.SetTargetProperty(_hideItemsStoryboard, "Opacity");
 
-        private void OpacityStoryboardOnCompleted(object sender, object o)
-        {
-            if (IsActive)
-                _inactiveStateItemPart.Visibility = Visibility.Collapsed;
+            _showItemsStoryboard.Completed += ShowItemsStoryboardOnCompleted;
         }
 
         private async void ScrollViewerPartOnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -332,7 +336,7 @@ namespace IanSavchenko.Controls
                 return;
             }
 
-            if (!_active)
+            if (!_active && !scrollViewerViewChangingEventArgs.IsInertial)
             {
                 _inactiveStateItemPart.Visibility = Visibility.Collapsed; // hiding immediately 
                 IsActive = true;
@@ -477,10 +481,19 @@ namespace IanSavchenko.Controls
             _active = active;
 
             // if has no highlight, not running animation
-            if (_highlightIndex == -1)
+            if (_highlightIndex == -1 || _snappingPerformed)
                 return;
 
-            ChangeScrollViewerOpacity(active ? 1 : 0);
+            if (active)
+            {
+                ShowScrollViewer();    
+            }
+            else
+            {
+                HideScrollViewer();
+            }
+
+
             if (!_active)
                 _inactiveStateItemPart.Visibility = Visibility.Visible;
 
@@ -488,21 +501,45 @@ namespace IanSavchenko.Controls
             _inactiveStateItemPart.ItemContent = _items[_highlightIndex].ItemContent;
             _inactiveStateItemPart.ItemTemplate = ItemTemplate;
         }
-        
-        private void ChangeScrollViewerOpacity(double to)
+
+        private void ShowScrollViewer()
+        {
+            var currentOpacity = _scrollViewerPart.Opacity;
+            
+            _hideItemsStoryboard.Stop();
+
+            if (_showItemsStoryboard.GetCurrentState() != ClockState.Stopped)
+                return;
+
+            _showItemsAnimation.From = currentOpacity;
+            _showItemsAnimation.To = 1;
+            _showItemsAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(200 * Math.Abs(1 - currentOpacity)));
+
+            _showItemsStoryboard.Begin();
+        }
+
+        private void HideScrollViewer()
         {
             var currentOpacity = _scrollViewerPart.Opacity;
 
-            if (_opacityAnimation.To == to)
+            _showItemsStoryboard.Stop();
+
+            if (_hideItemsStoryboard.GetCurrentState() != ClockState.Stopped)
                 return;
 
-            _opacityStoryboard.Stop();
+            _hideItemsAnimation.From = currentOpacity;
+            _hideItemsAnimation.To = 0;
+            _hideItemsAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(200 * Math.Abs(currentOpacity)));
 
-            _opacityAnimation.From = currentOpacity;
-            _opacityAnimation.To = to;
-            _opacityAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(200 * Math.Abs(to - currentOpacity)));
+            _hideItemsStoryboard.Begin();
+        }
 
-            _opacityStoryboard.Begin();
+        private void ShowItemsStoryboardOnCompleted(object sender, object o)
+        {
+            if (IsActive)
+            {
+                _inactiveStateItemPart.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }
