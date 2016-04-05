@@ -9,6 +9,10 @@ namespace ControlsTestApp
         {
             get { return Enumerable.Range(0, 100).Select(t => t.ToString("D2")).ToList(); }
         }
-             
+
+        public List<string> TestItemsShort
+        {
+            get { return Enumerable.Range(0, 2).Select(t => t.ToString("D2")).ToList(); }
+        }
     }
 }

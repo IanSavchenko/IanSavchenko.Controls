@@ -16,8 +16,8 @@
         <controls:ListSelector Margin="5,0"
                                HorizontalAlignment="Right"
                                VerticalAlignment="Stretch"
-                               ItemsSource="{Binding TestItems}"
-                               SelectedIndex="19" />
+                               ItemsSource="{Binding TestItemsShort}"
+                               SelectedIndex="0" />
 
         <controls:ListSelector Grid.Column="1"
                                Margin="5,0"
