@@ -19,6 +19,11 @@ namespace IanSavchenko.Controls
         private const string ScrollViewerPartName = "PART_ScrollViewer";
         private const string InactiveStateItemPartName = "PART_InactiveStateItem";
 
+        private const int ShowHideAnimationDurationMs = 200;
+
+        /// <summary>
+        /// Global reference to active selector. Helps to handle behavior that only one selector is active.
+        /// </summary>
         private static ListSelector ActiveSelector = null;
 
         public static readonly DependencyProperty ItemHeightProperty = 
@@ -134,8 +139,11 @@ namespace IanSavchenko.Controls
         
         protected override void OnApplyTemplate()
         {
+            // Part that contains all items
             _itemsControlPart = GetTemplateChild(ItemsControlPartName) as ItemsControl;
+            // Part that scrolls items
             _scrollViewerPart = GetTemplateChild(ScrollViewerPartName) as ScrollViewer;
+            // Placeholder that displays selected item, when ListSelector not active
             _inactiveStateItemPart = GetTemplateChild(InactiveStateItemPartName) as ListSelectorItem;
 
             _scrollViewerPart.ViewChanged += ScrollViewerPartOnViewChanged;
@@ -151,41 +159,45 @@ namespace IanSavchenko.Controls
 
         private static void OnItemHeightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+            // ToDo: handle run-time changes
         }
 
         private static void OnItemWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+            // ToDo: handle run-time changes
         }
 
         private static void OnItemTemplateChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
+            // ToDo: handle run-time changes
         }
 
         private static void OnIsActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var obj = (ListSelector)d;
-            if ((bool)e.NewValue)
-            {
-                if ((bool)e.OldValue == false)
-                    obj.SetActive(true);
+            var newValue = (bool)e.NewValue;
+            var oldValue = (bool)e.OldValue;
+            var target = (ListSelector)d;
 
-                if (ActiveSelector == obj)
+            if (newValue)
+            {
+                if (oldValue == false)
+                    target.SetActive(true);
+
+                if (ActiveSelector == target)
                     return;
 
                 var prevActiveSelector = ActiveSelector;
-                ActiveSelector = obj;
+                ActiveSelector = target;
 
                 if (prevActiveSelector != null)
-                {
                     prevActiveSelector.IsActive = false;
-                }
             }
             else
             {
-                if ((bool)e.OldValue)
-                    obj.SetActive(false);
+                if (oldValue)
+                    target.SetActive(false);
 
-                if (ActiveSelector == obj)
+                if (ActiveSelector == target)
                     ActiveSelector = null;
             }
         }
@@ -199,10 +211,8 @@ namespace IanSavchenko.Controls
 
         private static async void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var listSelector = d as ListSelector;
-            if (listSelector == null)
-                return;
-            
+            var listSelector = (ListSelector)d;
+
             listSelector.UpdateItemsControlItems();
             await listSelector.SelectItem(listSelector.SelectedIndex).ConfigureAwait(true);
         }
@@ -243,12 +253,12 @@ namespace IanSavchenko.Controls
         {
             if (_itemsControlPart == null)
                 return;
-
-            int index = 0;
-
+            
             _items.Clear();
+
             if (ItemsSource != null)
             {
+                int index = 0;
                 foreach (var item in ItemsSource)
                 {
                     var selectorItem = new ListSelectorItem()
@@ -265,6 +275,7 @@ namespace IanSavchenko.Controls
                 }
             }
 
+            // Maybe don't need this reset here?
             _itemsControlPart.ItemsSource = null;
             _itemsControlPart.ItemsSource = _items;
         }
@@ -275,7 +286,9 @@ namespace IanSavchenko.Controls
             _hideItemsStoryboard = new Storyboard();
             
             _hideItemsAnimation = new DoubleAnimation();
+            _hideItemsAnimation.To = 0;
             _showItemsAnimation = new DoubleAnimation();
+            _showItemsAnimation.To = 1;
 
             _showItemsStoryboard.Children.Add(_showItemsAnimation);
             _hideItemsStoryboard.Children.Add(_hideItemsAnimation);
@@ -293,7 +306,7 @@ namespace IanSavchenko.Controls
             if (_snappingPerformed)
                 return;
 
-            if (!_active)
+            if (!IsActive)
             {
                 IsActive = true;
                 return;
@@ -314,11 +327,9 @@ namespace IanSavchenko.Controls
 
             if (itemIndex == SelectedIndex)
             {
-                if (_active)
-                {
+                if (IsActive)
                     IsActive = false;
-                }
-
+                
                 return;
             }
             
@@ -326,6 +337,9 @@ namespace IanSavchenko.Controls
             await SelectItem(itemIndex).ConfigureAwait(true);
         }
 
+        /// <summary>
+        /// Occurs before every small scrolling step
+        /// </summary>
         private void ScrollViewerPartOnViewChanging(object sender, ScrollViewerViewChangingEventArgs scrollViewerViewChangingEventArgs)
         {
             _latestVerticalScrollOffset = scrollViewerViewChangingEventArgs.NextView.VerticalOffset;
@@ -347,6 +361,9 @@ namespace IanSavchenko.Controls
             CancelSnappingCheck();
         }
 
+        /// <summary>
+        /// Occurs after every small scrolling step
+        /// </summary>
         private async void ScrollViewerPartOnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
             if (e.IsIntermediate)
@@ -388,9 +405,8 @@ namespace IanSavchenko.Controls
                 return;
             
             _items[_highlightIndex].IsSelected = true;
-            _inactiveStateItemPart.ItemTemplate = null;
-            _inactiveStateItemPart.ItemContent = _items[_highlightIndex].ItemContent;
-            _inactiveStateItemPart.ItemTemplate = ItemTemplate;
+
+            UpdateInactiveStateItem();
         }
 
         private void RemoveHighlight()
@@ -406,6 +422,14 @@ namespace IanSavchenko.Controls
             _highlightIndex = -1;
         }
 
+        private void UpdateInactiveStateItem()
+        {
+            // some hack to make placeholder update content
+            _inactiveStateItemPart.ItemTemplate = null;
+            _inactiveStateItemPart.ItemContent = _items[_highlightIndex].ItemContent;
+            _inactiveStateItemPart.ItemTemplate = ItemTemplate;
+        }
+        
         private void SnapScrollToItem(int index)
         {
             if (index == -1)
@@ -416,7 +440,8 @@ namespace IanSavchenko.Controls
             {
                 FinishSnapping();
 
-                if (!_active)
+                // Finalizing no active state only after snapping finished
+                if (_active == false)
                     SetActive(_active);
 
                 return;
@@ -440,6 +465,9 @@ namespace IanSavchenko.Controls
             _scheduleInvoker.Stop();
         }
 
+        /// <summary>
+        /// Fail-safe mechanism to make sure we always are snapped
+        /// </summary>
         private async void CheckSnappingFinished()
         {
             if (_snappingPerformed == false)
@@ -462,14 +490,15 @@ namespace IanSavchenko.Controls
         
         private void ScrollToOffset(double newOffset, double currentOffset)
         {
+            // Sometimes ScrollViewer.ChangeView(...) doesn't work if you call it simultaneously with same params.
+            // In such case using obsolete ScrollToVerticalOffset
+            // This happens very rarely, only when you are tapping 2 items like crazy
             if (_prevChangeViewCallOffset == newOffset && currentOffset == _prevChangeViewCallCurrentOffset)
             {
-                // Debug.WriteLine("OLD WAY");
                 _scrollViewerPart.ScrollToVerticalOffset(newOffset);
             }
             else
             {
-                // Debug.WriteLine("NEW WAY");
                 _scrollViewerPart.ChangeView(0, newOffset, null);
                 _prevChangeViewCallOffset = newOffset;
                 _prevChangeViewCallCurrentOffset = currentOffset;
@@ -480,26 +509,20 @@ namespace IanSavchenko.Controls
         {
             _active = active;
 
-            // if has no highlight, not running animation
+            // if has no highlight or snapping, not running animation
             if (_highlightIndex == -1 || _snappingPerformed)
                 return;
 
             if (active)
-            {
-                ShowScrollViewer();    
-            }
+                ShowScrollViewer();
             else
-            {
                 HideScrollViewer();
-            }
 
-
+            // Showing immediately when not active
             if (!_active)
                 _inactiveStateItemPart.Visibility = Visibility.Visible;
 
-            _inactiveStateItemPart.ItemTemplate = null;
-            _inactiveStateItemPart.ItemContent = _items[_highlightIndex].ItemContent;
-            _inactiveStateItemPart.ItemTemplate = ItemTemplate;
+            UpdateInactiveStateItem();
         }
 
         private void ShowScrollViewer()
@@ -511,9 +534,8 @@ namespace IanSavchenko.Controls
             if (_showItemsStoryboard.GetCurrentState() != ClockState.Stopped)
                 return;
 
-            _showItemsAnimation.From = currentOpacity;
-            _showItemsAnimation.To = 1;
-            _showItemsAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(200 * Math.Abs(1 - currentOpacity)));
+            _showItemsAnimation.From = currentOpacity; // To = 1
+            _showItemsAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(ShowHideAnimationDurationMs * Math.Abs(1 - currentOpacity)));
 
             _showItemsStoryboard.Begin();
         }
@@ -527,19 +549,17 @@ namespace IanSavchenko.Controls
             if (_hideItemsStoryboard.GetCurrentState() != ClockState.Stopped)
                 return;
 
-            _hideItemsAnimation.From = currentOpacity;
-            _hideItemsAnimation.To = 0;
-            _hideItemsAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(200 * Math.Abs(currentOpacity)));
+            _hideItemsAnimation.From = currentOpacity; // To = 0
+            _hideItemsAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(ShowHideAnimationDurationMs * Math.Abs(currentOpacity)));
 
             _hideItemsStoryboard.Begin();
         }
 
         private void ShowItemsStoryboardOnCompleted(object sender, object o)
         {
+            // only when we showing animation completed, hiding placeholder
             if (IsActive)
-            {
                 _inactiveStateItemPart.Visibility = Visibility.Collapsed;
-            }
         }
     }
 }
