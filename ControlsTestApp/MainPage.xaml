@@ -8,27 +8,29 @@
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
       mc:Ignorable="d">
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <controls:ListSelector Margin="5,0"
-                               HorizontalAlignment="Right"
-                               VerticalAlignment="Stretch"
-                               ItemsSource="{Binding TestItemsShort}"
-                               SelectedIndex="0" />
+    <Pivot>
+        <PivotItem Header="Test1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <controls:ListSelector Margin="5,0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Stretch"
+                                       ItemsSource="{Binding TestItemsShort}"
+                                       SelectedIndex="0" />
 
-        <controls:ListSelector Grid.Column="1"
-                               Margin="5,0"
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Stretch"
-                               ItemHeight="130"
-                               ItemMargin="0,5"
-                               ItemWidth="130"
-                               ItemsSource="{Binding TestItems}"
-                               SelectedIndex="3">
-            <!--<controls:ListSelector.ItemTemplate>
+                <controls:ListSelector Grid.Column="1"
+                                       Margin="5,0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Stretch"
+                                       ItemHeight="130"
+                                       ItemMargin="0,5"
+                                       ItemWidth="130"
+                                       ItemsSource="{Binding TestItems}"
+                                       SelectedIndex="3">
+                    <!--<controls:ListSelector.ItemTemplate>
                 <DataTemplate>
                     <TextBlock HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -37,6 +39,36 @@
                                Text="{Binding}" />
                 </DataTemplate>
             </controls:ListSelector.ItemTemplate>-->
-        </controls:ListSelector>
-    </Grid>
+                </controls:ListSelector>
+            </Grid>
+        </PivotItem>
+
+        <PivotItem Header="Test2">
+            <StackPanel>
+                <Button HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Content="Test">
+                    <!--<Button.Resources>
+                        <Style TargetType="FlyoutPresenter">
+                            <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+                            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+                            <Setter Property="IsTabStop" Value="True" />
+                            <Setter Property="TabNavigation" Value="Cycle" />
+                        </Style>
+                    </Button.Resources>-->
+                    <Button.Flyout>
+                        <controls:ListSelectorFlyout>
+
+                            <controls:ListSelector HorizontalAlignment="Center"
+                                                   VerticalAlignment="Stretch"
+                                                   ItemsSource="{Binding TestItems}" />
+
+
+                        </controls:ListSelectorFlyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
+        </PivotItem>
+    </Pivot>
+
 </Page>

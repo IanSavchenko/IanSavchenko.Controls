@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -232,13 +233,18 @@ namespace IanSavchenko.Controls
             if (_itemsControlPart == null)
                 return;
 
-            // making first and last elements centered 
-            var topMargin = (ActualHeight / 2) - ItemMargin.Top - (ItemHeight / 2);
-            var bottomMargin = (ActualHeight / 2) - ItemMargin.Bottom - (ItemHeight / 2);
+            // Getting height of ListSelector
+            var height = ActualHeight;
+
+            // calculating margin for ItemsControl part
+            var topMargin = (height / 2) - ItemMargin.Top - (ItemHeight / 2);
+            var bottomMargin = (height / 2) - ItemMargin.Bottom - (ItemHeight / 2);
             _itemsControlMargin = new Thickness(0, topMargin, 0, bottomMargin);
+
+            // making first and last elements centered
             _itemsControlPart.Margin = _itemsControlMargin;
         }
-
+        
         private int GetItemIndexForScrollOffset(double scrollOffset)
         {
             var firstItemOffset = _itemsControlMargin.Top;
@@ -249,7 +255,7 @@ namespace IanSavchenko.Controls
             return index;
         }
         
-        private void UpdateItemsControlItems()
+        private async void UpdateItemsControlItems()
         {
             if (_itemsControlPart == null)
                 return;
@@ -278,6 +284,9 @@ namespace IanSavchenko.Controls
             // Maybe don't need this reset here?
             _itemsControlPart.ItemsSource = null;
             _itemsControlPart.ItemsSource = _items;
+
+            if (_items.Count > 0 && SelectedIndex == -1)
+                await SelectItem(0).ConfigureAwait(true);
         }
 
         private void CreateAnimations()
