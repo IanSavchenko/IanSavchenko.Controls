@@ -176,13 +176,13 @@ namespace IanSavchenko.Controls
         private static void OnIsActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var newValue = (bool)e.NewValue;
-            var oldValue = (bool)e.OldValue;
             var target = (ListSelector)d;
+            
+            Debug.WriteLine($"IsActive {newValue}" + DateTime.Now.ToString("O"));
 
             if (newValue)
             {
-                if (oldValue == false)
-                    target.SetActive(true);
+                target.SetActive(true);
 
                 if (ActiveSelector == target)
                     return;
@@ -195,8 +195,7 @@ namespace IanSavchenko.Controls
             }
             else
             {
-                if (oldValue)
-                    target.SetActive(false);
+                target.SetActive(false);
 
                 if (ActiveSelector == target)
                     ActiveSelector = null;
@@ -312,6 +311,7 @@ namespace IanSavchenko.Controls
 
         private async void ScrollViewerPartOnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
+            Debug.WriteLine("Tapped " + DateTime.Now.ToString("O"));
             if (_snappingPerformed)
                 return;
 
@@ -351,6 +351,7 @@ namespace IanSavchenko.Controls
         /// </summary>
         private void ScrollViewerPartOnViewChanging(object sender, ScrollViewerViewChangingEventArgs scrollViewerViewChangingEventArgs)
         {
+            Debug.WriteLine("ScrollViewerPartOnViewChanging IsInertial: " + scrollViewerViewChangingEventArgs.IsInertial + " " + scrollViewerViewChangingEventArgs.NextView.VerticalOffset + " " + DateTime.Now.ToString("O"));
             _latestVerticalScrollOffset = scrollViewerViewChangingEventArgs.NextView.VerticalOffset;
 
             if (_snappingPerformed)
@@ -375,6 +376,7 @@ namespace IanSavchenko.Controls
         /// </summary>
         private async void ScrollViewerPartOnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
+            Debug.WriteLine("ScrollViewerPartOnViewChanged IsIntermediate: " + e.IsIntermediate + " " + DateTime.Now.ToString("O"));
             if (e.IsIntermediate)
                 return;
 
@@ -456,8 +458,8 @@ namespace IanSavchenko.Controls
                 return;
             }
 
-            if (_snappingPerformed)
-                return;
+            //if (_snappingPerformed)
+            //    return;
             
             StartSnapping();
             ScrollToOffset(offset, _latestVerticalScrollOffset);
@@ -466,7 +468,7 @@ namespace IanSavchenko.Controls
 
         private void RescheduleSnappingCheck()
         {
-            _scheduleInvoker.Schedule(TimeSpan.FromMilliseconds(500), CheckSnappingFinished);
+            _scheduleInvoker.Schedule(TimeSpan.FromMilliseconds(300), CheckSnappingFinished);
         }
 
         private void CancelSnappingCheck()
@@ -540,13 +542,17 @@ namespace IanSavchenko.Controls
             
             _hideItemsStoryboard.Stop();
 
-            if (_showItemsStoryboard.GetCurrentState() != ClockState.Stopped)
-                return;
+            lock (_showItemsStoryboard)
+            {
+                if (_showItemsStoryboard.GetCurrentState() != ClockState.Stopped)
+                    return;
 
-            _showItemsAnimation.From = currentOpacity; // To = 1
-            _showItemsAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(ShowHideAnimationDurationMs * Math.Abs(1 - currentOpacity)));
+                _showItemsAnimation.From = currentOpacity; // To = 1
+                _showItemsAnimation.Duration =
+                    new Duration(TimeSpan.FromMilliseconds(ShowHideAnimationDurationMs*Math.Abs(1 - currentOpacity)));
 
-            _showItemsStoryboard.Begin();
+                _showItemsStoryboard.Begin();
+            }
         }
 
         private void HideScrollViewer()
@@ -555,13 +561,17 @@ namespace IanSavchenko.Controls
 
             _showItemsStoryboard.Stop();
 
-            if (_hideItemsStoryboard.GetCurrentState() != ClockState.Stopped)
-                return;
+            lock (_hideItemsStoryboard)
+            {
+                if (_hideItemsStoryboard.GetCurrentState() != ClockState.Stopped)
+                    return;
 
-            _hideItemsAnimation.From = currentOpacity; // To = 0
-            _hideItemsAnimation.Duration = new Duration(TimeSpan.FromMilliseconds(ShowHideAnimationDurationMs * Math.Abs(currentOpacity)));
+                _hideItemsAnimation.From = currentOpacity; // To = 0
+                _hideItemsAnimation.Duration =
+                    new Duration(TimeSpan.FromMilliseconds(ShowHideAnimationDurationMs*Math.Abs(currentOpacity)));
 
-            _hideItemsStoryboard.Begin();
+                _hideItemsStoryboard.Begin();
+            }
         }
 
         private void ShowItemsStoryboardOnCompleted(object sender, object o)
