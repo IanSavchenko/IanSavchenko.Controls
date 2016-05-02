@@ -8,7 +8,7 @@ using Windows.UI.Xaml.Markup;
 namespace IanSavchenko.Controls
 {
     /// <summary>
-    /// Flyout to containt ListSelectors
+    /// Flyout to contain ListSelectors
     /// </summary>
     [ContentProperty(Name = "Content")]
     public class ListSelectorFlyout : PickerFlyoutBase
