@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -133,7 +134,7 @@ namespace IanSavchenko.Controls
                 if (_items.Count == 0)
                     return 0;
 
-                return (_scrollViewerPart.ExtentHeight - _itemsControlMargin.Top - _itemsControlMargin.Bottom) / _items.Count;
+                return (_itemsControlPart.ActualHeight) / _items.Count;
             }
         }
         
@@ -224,6 +225,7 @@ namespace IanSavchenko.Controls
         private void OnSizeChanged(object sender, SizeChangedEventArgs sizeChangedEventArgs)
         {
             UpdateGeometricalParams();
+            UpdateItemsOpacity();
         }
 
         private void UpdateGeometricalParams()
@@ -279,6 +281,8 @@ namespace IanSavchenko.Controls
                 }
             }
 
+            UpdateItemsOpacity();
+            
             // Maybe don't need this reset here?
             _itemsControlPart.ItemsSource = null;
             _itemsControlPart.ItemsSource = _items;
@@ -353,6 +357,8 @@ namespace IanSavchenko.Controls
             //Debug.WriteLine("ScrollViewerPartOnViewChanging IsInertial: " + scrollViewerViewChangingEventArgs.IsInertial + " " + scrollViewerViewChangingEventArgs.NextView.VerticalOffset + " " + DateTime.Now.ToString("O"));
             _latestVerticalScrollOffset = scrollViewerViewChangingEventArgs.NextView.VerticalOffset;
 
+            UpdateItemsOpacity();
+
             if (_snappingPerformed)
             {
                 RescheduleSnappingCheck();
@@ -387,6 +393,24 @@ namespace IanSavchenko.Controls
             await SelectItem(GetItemIndexForScrollOffset(_latestVerticalScrollOffset)).ConfigureAwait(true);
         }
         
+        /// <summary>
+        /// Need this to hide some items and improve performance
+        /// </summary>
+        private void UpdateItemsOpacity()
+        {
+            var visibleItemsNum = (int)(ActualHeight/ScrollOffsetPerItem);
+            
+            var itemInCenter = GetItemIndexForScrollOffset(_latestVerticalScrollOffset);
+
+            var minVisibleIndex = itemInCenter - visibleItemsNum;
+            var maxVisibleIndex = itemInCenter + visibleItemsNum;
+
+            for (int i = 0; i < _items.Count; i++)
+            {
+                _items[i].Opacity = i >= minVisibleIndex && i <= maxVisibleIndex ? 1 : 0;
+            }
+        }
+        
         private async Task SelectItem(int index)
         {
             if (_itemsControlPart == null)
@@ -398,6 +422,7 @@ namespace IanSavchenko.Controls
             HighlightItem(index);
             SnapScrollToItem(index);
             SelectedIndex = index;
+            SetActive(IsActive);
         }
 
         private void HighlightItem(int index)

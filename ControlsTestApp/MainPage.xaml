@@ -57,9 +57,10 @@
                         </Style>
                     </Button.Resources>-->
                     <Button.Flyout>
-                        <controls:ListSelectorFlyout>
+                        <controls:ListSelectorFlyout Opened="FlyoutBase_OnOpened">
 
                             <controls:ListSelector HorizontalAlignment="Center"
+                                                   x:Name="OptionsListSelector"
                                                    VerticalAlignment="Stretch"
                                                    ItemsSource="{Binding TestItems}" />
 

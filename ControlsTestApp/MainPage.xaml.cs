@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -29,6 +30,7 @@ namespace ControlsTestApp
             this.NavigationCacheMode = NavigationCacheMode.Required;
 
             DataContext = _mainPageViewModel;
+            OptionsListSelector.SelectedIndex = 50;
         }
 
         /// <summary>
@@ -45,6 +47,11 @@ namespace ControlsTestApp
             // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
+        }
+
+        private void FlyoutBase_OnOpened(object sender, object e)
+        {
+            OptionsListSelector.IsActive = true;
         }
     }
 }
