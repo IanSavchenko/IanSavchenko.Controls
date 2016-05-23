@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -178,7 +177,7 @@ namespace IanSavchenko.Controls
             var newValue = (bool)e.NewValue;
             var target = (ListSelector)d;
             
-            Debug.WriteLine($"IsActive {newValue}" + DateTime.Now.ToString("O"));
+            //Debug.WriteLine($"IsActive {newValue}" + DateTime.Now.ToString("O"));
 
             if (newValue)
             {
@@ -311,7 +310,7 @@ namespace IanSavchenko.Controls
 
         private async void ScrollViewerPartOnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            Debug.WriteLine("Tapped " + DateTime.Now.ToString("O"));
+            //Debug.WriteLine("Tapped " + DateTime.Now.ToString("O"));
             if (_snappingPerformed)
                 return;
 
@@ -351,7 +350,7 @@ namespace IanSavchenko.Controls
         /// </summary>
         private void ScrollViewerPartOnViewChanging(object sender, ScrollViewerViewChangingEventArgs scrollViewerViewChangingEventArgs)
         {
-            Debug.WriteLine("ScrollViewerPartOnViewChanging IsInertial: " + scrollViewerViewChangingEventArgs.IsInertial + " " + scrollViewerViewChangingEventArgs.NextView.VerticalOffset + " " + DateTime.Now.ToString("O"));
+            //Debug.WriteLine("ScrollViewerPartOnViewChanging IsInertial: " + scrollViewerViewChangingEventArgs.IsInertial + " " + scrollViewerViewChangingEventArgs.NextView.VerticalOffset + " " + DateTime.Now.ToString("O"));
             _latestVerticalScrollOffset = scrollViewerViewChangingEventArgs.NextView.VerticalOffset;
 
             if (_snappingPerformed)
@@ -376,7 +375,7 @@ namespace IanSavchenko.Controls
         /// </summary>
         private async void ScrollViewerPartOnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
-            Debug.WriteLine("ScrollViewerPartOnViewChanged IsIntermediate: " + e.IsIntermediate + " " + DateTime.Now.ToString("O"));
+            //Debug.WriteLine("ScrollViewerPartOnViewChanged IsIntermediate: " + e.IsIntermediate + " " + DateTime.Now.ToString("O"));
             if (e.IsIntermediate)
                 return;
 
